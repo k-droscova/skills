@@ -51,6 +51,8 @@ The question: *should my private skills folder become the public GitHub repo?*
 npx skills add k-droscova/skills
 ```
 
+Needs Node.js 22.20 or newer (check with `node -v`).
+
 **claude.ai or ChatGPT**
 
 1. Download [grill-me-humanly.zip](https://github.com/k-droscova/skills/releases/download/latest/grill-me-humanly.zip).
