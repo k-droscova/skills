@@ -1,0 +1,43 @@
+# Builds one upload-ready zip per skill (for claude.ai and ChatGPT) and
+# attaches them to the "latest" release, so the download links never change:
+#   https://github.com/k-droscova/skills/releases/download/latest/<skill>.zip
+name: Build skill zips
+
+on:
+  push:
+    branches: [main]
+    paths: ["skills/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zips
+  cancel-in-progress: true
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zip each skill folder
+        run: |
+          mkdir -p dist
+          cd skills
+          for dir in */; do
+            name="${dir%/}"
+            zip -rq "../dist/$name.zip" "$name" -x '*.DS_Store'
+          done
+          ls -l ../dist
+
+      - name: Replace the "latest" release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --cleanup-tag --yes || true
+          gh release create latest dist/*.zip \
+            --target "$GITHUB_SHA" \
+            --title "Latest skills" \
+            --notes "Upload-ready zips, rebuilt on every change. Upload one to claude.ai (Settings → Skills) or ChatGPT (Plugins → Skills → Create → Upload from your computer)."
